@@ -5,4 +5,5 @@ include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
 add_executable(example example.cpp)
+target_include_directories(example PUBLIC ${CONAN_INCLUDE_DIRS})
 target_link_libraries(example ${CONAN_LIBS})

@@ -1,6 +1,7 @@
 #include <iostream>
-#include "hello.h"
+#include <google/protobuf/dynamic_message.h>
 
-int main() {
-    hello();
+int main() 
+{
+	google::protobuf::DynamicMessageFactory factory;
 }
