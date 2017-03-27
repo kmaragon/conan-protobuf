@@ -6,7 +6,7 @@ class ProtobufConan(ConanFile):
     name = "Protobuf"
     version = "2.6.1"
     license = "https://raw.githubusercontent.com/google/protobuf/master/LICENSE"
-    url = "https://github.com/google/protobuf"
+    url = "https://github.com/kmaragon/conan-protobuf"
     settings = "os", "compiler", "build_type", "arch"
     options = {
         "build_shared": [True, False],
@@ -56,8 +56,8 @@ class ProtobufConan(ConanFile):
         self.copy("*", dst="include", src="pkg/include")
 
     def package_info(self):
-        if self.settings.os == "Macos":
-            self.cpp_info.libs = ["libprotobuf.a"] if self.options.use_static else ["libprotobuf.9.dylib"]
+        if self.options.use_static:
+            self.cpp_info.libs = ["libprotobuf.a"]
         else:
             self.cpp_info.libs = ["protobuf"]
         self.cpp_info.libdirs = ["lib"]
