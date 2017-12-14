@@ -1,65 +1,59 @@
-from conans import ConanFile, CMake, tools
+from conans import ConanFile, tools
 import os
 import re
 
 class ProtobufConan(ConanFile):
     name = "Protobuf"
-    version = "2.6.1"
+    version = "3.5.0"
     license = "https://raw.githubusercontent.com/google/protobuf/master/LICENSE"
     url = "https://github.com/kmaragon/conan-protobuf"
     settings = "os", "compiler", "build_type", "arch"
     options = {
-        "build_shared": [True, False],
-        "build_static": [True, False],
-        "use_static": [True, False]
+        "shared": [True, False],
+        "with_zlib": [True, False]
     }
 
-    default_options = "build_shared=True","build_static=True","use_static=False"
-    generators = "cmake"
+    default_options = "shared=True","with_zlib=True"
+    generators = "virtualbuildenv"
     description = "*nix only (for now) implementation of protobuf that can be used as a dep for other libs"
 
-    def source(self):
-        tools.download("https://github.com/google/protobuf/"
-                       "releases/download/v2.6.1/protobuf-2.6.1.zip",
-                       "protobuf.zip")
+    def configure(self):
+        if self.options.with_zlib:
+            self.requires("zlib/1.2.11@conan/stable")
 
-        tools.unzip("protobuf.zip")
-        os.unlink("protobuf.zip")
+    def source(self):
+        tools.download("https://github.com/google/protobuf/archive/v%s.tar.gz" % self.version,
+                       "protobuf.tar.gz")
+
+        tools.unzip("protobuf.tar.gz")
+        os.unlink("protobuf.tar.gz")
 
         # autogen
         self.run("chmod +x protobuf-%s/autogen.sh" % self.version)
         self.run("cd protobuf-%s && ./autogen.sh" % self.version)
 
     def build(self):
-        current_dir = os.getcwd()
-        finished_package = current_dir + "/pkg"
-        flags = "--enable-shared" if self.options.build_shared else "--disable-shared" + \
-                "--enable-static" if self.options.build_static else "--disable-static"
+        flags = "--enable-shared" if self.options.shared else "--disable-shared" + \
+                "--disable-static" if self.options.shared else "--enable-static"
 
         make_options = os.getenv("MAKEOPTS") or ""
         if not re.match("/[^A-z-a-z_-]-j", make_options):
             cpucount = tools.cpu_count()
-            make_options += " -j %s" % (cpucount * 2)
+            make_options += " -j %s" % cpucount 
 
 
         # configure
         self.run("chmod +x protobuf-%s/configure" % self.version)
-        self.run("mkdir -p protobuf-%s/build" % self.version)
-        self.run("cd protobuf-%s/build && ../configure --prefix=%s %s" % (self.version, finished_package, flags))
+        self.run("cd protobuf-%s && ./configure --prefix=%s %s" % (self.version, self.package_folder, flags))
 
         # build
-        self.run("cd protobuf-%s/build && make %s install" % (self.version, make_options))
+        self.run("source activate_build.* && cd protobuf-%s && make %s" % (self.version, make_options))
 
     def package(self):
-        self.copy("*", dst="lib", src="pkg/lib", links=True)
-        self.copy("*", dst="bin", src="pkg/bin", links=True)
-        self.copy("*", dst="include", src="pkg/include", links=True)
+        self.run("cd protobuf-%s && make install" % self.version)
 
     def package_info(self):
-        if self.options.use_static:
-            self.cpp_info.libs = ["libprotobuf.a"]
-        else:
-            self.cpp_info.libs = ["protobuf"]
+        self.cpp_info.libs = ["protobuf"]
         self.cpp_info.libdirs = ["lib"]
         self.cpp_info.includedirs = ["include"]
         self.cpp_info.bindirs = ["bin"]
