@@ -44,10 +44,10 @@ class ProtobufConan(ConanFile):
 
         # configure
         self.run("chmod +x protobuf-%s/configure" % self.version)
-        self.run("cd protobuf-%s && ./configure --prefix=%s %s" % (self.version, self.package_folder, flags))
+        self.run(". activate_build.* && cd protobuf-%s && ./configure --prefix=%s %s" % (self.version, self.package_folder, flags))
 
         # build
-        self.run("source activate_build.* && cd protobuf-%s && make %s" % (self.version, make_options))
+        self.run(". activate_build.* && cd protobuf-%s && make %s" % (self.version, make_options))
 
     def package(self):
         self.run("cd protobuf-%s && make install" % self.version)
