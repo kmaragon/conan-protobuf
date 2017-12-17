@@ -41,16 +41,34 @@ class ProtobufConan(ConanFile):
             cpucount = tools.cpu_count()
             make_options += " -j %s" % cpucount 
 
+        cdir = os.getcwd()
+        image_location = os.path.join(cdir, "buildimg")
 
         # configure
         self.run("chmod +x protobuf-%s/configure" % self.version)
-        self.run(". ./activate_build.* && cd protobuf-%s && ./configure --prefix=%s %s" % (self.version, self.package_folder, flags))
+        self.run(". ./activate_build.* && cd protobuf-%s && ./configure --prefix=%s %s" % (self.version, image_location, flags))
 
         # build
         self.run(". ./activate_build.* && cd protobuf-%s && make %s" % (self.version, make_options))
 
     def package(self):
         self.run("cd protobuf-%s && make install" % self.version)
+        if self.options.shared:
+            if self.settings.os == "Windows":
+                self.copy("*.lib", dst="lib", src="buildimg/lib")
+                self.copy("*.dll", dst="lib", src="buildimg/lib")
+            elif self.settings.os == "Macos":
+                self.copy("*.dylib*", dst="lib", src="buildimg/lib")
+            else:
+                self.copy("*.so*", dst="lib", src="buildimg/lib")
+        else:
+            if self.settings.os == "Windows":
+                self.copy("*.lib", dst="lib", src="buildimg/lib")
+            else:
+                self.copy("*.a", dst="lib", src="buildimg/lib")
+
+        self.copy("*", dst="include", src="buildimg/include")
+        self.copy("*", dst="bin", src="buildimg/bin")
 
     def package_info(self):
         self.cpp_info.libs = ["protobuf"]
