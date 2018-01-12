@@ -33,8 +33,8 @@ class ProtobufConan(ConanFile):
         self.run("cd protobuf-%s && ./autogen.sh" % self.version)
 
     def build(self):
-        flags = "--enable-shared" if self.options.shared else "--disable-shared" + \
-                "--disable-static" if self.options.shared else "--enable-static"
+        flags = "--enable-shared" if self.options.shared else "--disable-shared" # + \
+                # ("--disable-static" if self.options.shared else "--enable-static")
 
         make_options = os.getenv("MAKEOPTS") or ""
         if not re.match("/[^A-z-a-z_-]-j", make_options):
@@ -58,9 +58,9 @@ class ProtobufConan(ConanFile):
                 self.copy("*.lib", dst="lib", src="buildimg/lib")
                 self.copy("*.dll", dst="lib", src="buildimg/lib")
             elif self.settings.os == "Macos":
-                self.copy("*.dylib*", dst="lib", src="buildimg/lib")
+                self.copy("*.dylib*", dst="lib", src="buildimg/lib", links=True)
             else:
-                self.copy("*.so*", dst="lib", src="buildimg/lib")
+                self.copy("*.so*", dst="lib", src="buildimg/lib", links=True)
         else:
             if self.settings.os == "Windows":
                 self.copy("*.lib", dst="lib", src="buildimg/lib")
