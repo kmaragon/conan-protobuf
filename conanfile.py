@@ -13,7 +13,7 @@ class ProtobufConan(ConanFile):
         "with_zlib": [True, False]
     }
 
-    default_options = "shared=True","with_zlib=True"
+    default_options = "shared=False","with_zlib=True"
     generators = "virtualbuildenv"
     description = "*nix only (for now) implementation of protobuf that can be used as a dep for other libs"
 
@@ -33,7 +33,7 @@ class ProtobufConan(ConanFile):
         self.run("cd protobuf-%s && ./autogen.sh" % self.version)
 
     def build(self):
-        flags = "--enable-shared" if self.options.shared else "--disable-shared" # + \
+        flags = "--enable-shared" if self.options.shared else "--disable-shared CXXFLAGS=-fPIC" # + \
                 # ("--disable-static" if self.options.shared else "--enable-static")
 
         make_options = os.getenv("MAKEOPTS") or ""
