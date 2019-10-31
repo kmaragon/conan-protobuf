@@ -8,7 +8,6 @@ username = os.getenv("CONAN_USERNAME", "kmaragon")
 
 class ProtobufTestConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
-    requires = "Protobuf/3.5.0@%s/%s" % (username, channel)
     generators = "cmake"
 
     def build(self):

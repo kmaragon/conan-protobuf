@@ -3,8 +3,8 @@ import os
 import re
 
 class ProtobufConan(ConanFile):
-    name = "Protobuf"
-    version = "3.5.0"
+    name = "protobuf"
+    version = "3.9.1"
     license = "https://raw.githubusercontent.com/google/protobuf/master/LICENSE"
     url = "https://github.com/kmaragon/conan-protobuf"
     settings = "os", "compiler", "build_type", "arch"
@@ -19,7 +19,7 @@ class ProtobufConan(ConanFile):
 
     def configure(self):
         if self.options.with_zlib:
-            self.requires("zlib/1.2.11@conan/stable")
+            self.requires("zlib/1.2.11")
 
     def source(self):
         tools.download("https://github.com/google/protobuf/archive/v%s.tar.gz" % self.version,
